@@ -1,4 +1,4 @@
-# EarthView - NASA Weather Dashboard
+# WhatTheForecast - NASA Weather Dashboard
 
 A modern React.js application that implements a sleek dark-themed dashboard for exploring NASA Earth observation data and weather information.
 
