@@ -1,0 +1,98 @@
+/* Reset and base styles for whattheforecast */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Space Grotesk', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #0f172a;
+  color: #f8fafc;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+  width: 100%;
+  background-color: #0f172a;
+}
+
+/* Dark theme color overrides */
+.bg-gray-900 {
+  background-color: #1e293b !important;
+}
+
+.bg-gray-800 {
+  background-color: #334155 !important;
+}
+
+.border-gray-800 {
+  border-color: #334155 !important;
+}
+
+.border-gray-700 {
+  border-color: #475569 !important;
+}
+
+.text-gray-200 {
+  color: #f8fafc !important;
+}
+
+.text-gray-300 {
+  color: #e2e8f0 !important;
+}
+
+.text-gray-400 {
+  color: #94a3b8 !important;
+}
+
+/* Custom glow effects */
+:root {
+  --glow-color: #1173d4;
+}
+
+.glow-effect {
+  box-shadow: 0 0 5px 2px var(--glow-color), 0 0 10px 3px var(--glow-color), 0 0 20px 5px var(--glow-color);
+}
+
+/* Form select styling */
+.form-select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* Checkbox styling */
+.form-checkbox:checked {
+  background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+}
+
+/* Date picker styling for dark theme */
+::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
+/* Input field dark theme */
+input[type="text"], input[type="search"], input[type="date"], select, textarea {
+  background-color: #1e293b !important;
+  border-color: #475569 !important;
+  color: #f8fafc !important;
+}
+
+input[type="text"]:focus, input[type="search"]:focus, input[type="date"]:focus, select:focus, textarea:focus {
+  border-color: #1173d4 !important;
+  box-shadow: 0 0 0 2px rgba(17, 115, 212, 0.5) !important;
+}

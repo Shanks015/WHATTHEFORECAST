@@ -1,0 +1,6 @@
+/* Custom styles for EarthView dashboard */
+.glow-effect {
+  box-shadow: 0 0 5px 2px var(--glow-color), 0 0 10px 3px var(--glow-color), 0 0 20px 5px var(--glow-color);
+}
+
+/* Additional custom animations and effects can be added here */
