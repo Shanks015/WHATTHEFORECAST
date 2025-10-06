@@ -26,9 +26,6 @@ const TemperatureBox = styled(Box)(({ theme }) => ({
         transform: 'translateY(-5px)'
     }
 }));
-        border: `1px solid ${theme.palette.divider}`,
-    }
-}));
 
 const MLForecastCard = ({ forecast, isLoading, error }) => {
     const theme = useTheme();

@@ -15,7 +15,8 @@ const Header = () => {
           <nav className="hidden items-center gap-8 md:flex">
             <Link className="text-sm font-medium text-text-muted hover:text-primary transition-colors" to="/">Home</Link>{/* 
             <Link className="text-sm font-medium text-text-muted hover:text-primary transition-colors" to="/analytics">Explore</Link> */}
-            <Link className="text-sm font-medium text-text-muted hover:text-primary transition-colors" to="/customize">Dashboards</Link>{/* 
+            <Link className="text-sm font-medium text-text-muted hover:text-primary transition-colors" to="/customize">Dashboards</Link>
+            <Link className="text-sm font-medium text-text-muted hover:text-primary transition-colors" to="/nasa-resources">NASA Data</Link>{/* 
             <Link className="text-sm font-medium text-text-muted hover:text-primary transition-colors" to="/download">Download</Link> */}{/* 
             <a className="text-sm font-medium text-text-muted hover:text-primary transition-colors" href="#">About</a> */}
           </nav>

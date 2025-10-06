@@ -1,0 +1,92 @@
+@startuml Weather Dashboard Use Cases
+
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #FFFFFF
+  BorderColor #2E86C1
+  ArrowColor #2E86C1
+}
+
+'Actors
+actor "User" as user
+actor "Weather API" as weatherAPI
+actor "ML Model" as mlModel
+
+rectangle "Weather Dashboard System" {
+  'Main Use Cases
+  usecase "View Current Weather" as UC1
+  usecase "View Weather Forecast" as UC2
+  usecase "Define Location Area" as UC3
+  usecase "Customize Dashboard" as UC4
+  usecase "Download Weather Data" as UC5
+  usecase "View Analytics" as UC6
+  usecase "View Satellite Map" as UC7
+  
+  'Sub Use Cases
+  usecase "Select Location" as UC3_1
+  usecase "Draw Area on Map" as UC3_2
+  usecase "View Temperature" as UC1_1
+  usecase "View Humidity" as UC1_2
+  usecase "View Wind Speed" as UC1_3
+  usecase "View Pressure" as UC1_4
+  usecase "Export as JSON" as UC5_1
+  usecase "Export as CSV" as UC5_2
+  usecase "View Historical Data" as UC6_1
+  usecase "View Trends" as UC6_2
+  usecase "View ML Predictions" as UC6_3
+}
+
+'Relationships
+user --> UC1
+user --> UC2
+user --> UC3
+user --> UC4
+user --> UC5
+user --> UC6
+user --> UC7
+
+'Location Selection Extensions
+UC3 <|-- UC3_1
+UC3 <|-- UC3_2
+
+'Current Weather Extensions
+UC1 <|-- UC1_1
+UC1 <|-- UC1_2
+UC1 <|-- UC1_3
+UC1 <|-- UC1_4
+
+'Download Data Extensions
+UC5 <|-- UC5_1
+UC5 <|-- UC5_2
+
+'Analytics Extensions
+UC6 <|-- UC6_1
+UC6 <|-- UC6_2
+UC6 <|-- UC6_3
+
+'System Dependencies
+weatherAPI --> UC1 : Provides Data
+weatherAPI --> UC2 : Provides Data
+mlModel --> UC6_3 : Generates Predictions
+
+'Include Relationships
+UC1 ..> UC3_1 : <<include>>
+UC2 ..> UC3_1 : <<include>>
+UC7 ..> UC3_1 : <<include>>
+
+note right of UC4
+  User can customize:
+  * Dashboard layout
+  * Displayed metrics
+  * Update frequency
+  * Visual themes
+end note
+
+note right of UC7
+  Satellite view includes:
+  * Weather overlay
+  * Temperature zones
+  * Cloud coverage
+end note
+
+@enduml

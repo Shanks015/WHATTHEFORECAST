@@ -6,6 +6,7 @@ import CustomizeDashboardPage from './components/CustomizeDashboardPage';
 import DashboardPage from './components/DashboardPage';
 import AnalyticsDashboardPage from './components/AnalyticsDashboardPage';
 import DataDownloadPage from './components/DataDownloadPage';
+import NASAResourcesPage from './components/NASAResourcesPage';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/define-area" element={<DefineAreaPage />} />
         <Route path="/customize" element={<DashboardPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/nasa-resources" element={<NASAResourcesPage />} />
       </Routes>
     </Router>
   );

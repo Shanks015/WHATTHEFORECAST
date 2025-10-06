@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Header from './Header';
 import weatherService from '../services/weatherService';
+import nasaDataService from '../services/nasaDataService';
 import { downloadAsJson, downloadAsCsv } from '../utils/downloadUtils';
 
 const DashboardPage = () => {
@@ -11,6 +12,10 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedLocationData, setSelectedLocationData] = useState(null);
   const [location, setLocation] = useState({ lat: 37.7749, lng: -122.4194, name: 'San Francisco, CA' }); // Default location
+  const [nasaPrecip, setNasaPrecip] = useState({ loading: false, series: [], latest: null, average: null, error: null });
+  const [nasaOverlayEnabled, setNasaOverlayEnabled] = useState(false);
+  const mapRef = React.useRef(null);
+  const nasaOverlayRef = React.useRef(null);
 
   const handleDownload = (format) => {
     const downloadData = {
@@ -255,6 +260,7 @@ const DashboardPage = () => {
           }
         ]
       });
+      mapRef.current = map;
 
       // Only show the blue pin marker, remove the red pin and text
       if (window.dashboardMarker) {
@@ -270,11 +276,79 @@ const DashboardPage = () => {
         }
       });
 
+      // If overlay should be active, ensure it is added
+      if (nasaOverlayEnabled) {
+        addNasaGibsOverlay();
+      }
+
       console.log('Weather map initialized successfully');
     } catch (error) {
       console.error('Error initializing weather map:', error);
     }
   };
+
+  // Add / remove NASA GIBS overlay
+  const addNasaGibsOverlay = () => {
+    if (!mapRef.current) return;
+    const dateStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const layer = 'MODIS_Terra_CorrectedReflectance_TrueColor';
+    const urlTemplate = `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/${layer}/default/${dateStr}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`;
+    if (!nasaOverlayRef.current) {
+      nasaOverlayRef.current = new google.maps.ImageMapType({
+        getTileUrl: (coord, zoom) => urlTemplate
+          .replace('{z}', zoom)
+          .replace('{y}', coord.y)
+          .replace('{x}', coord.x),
+        tileSize: new google.maps.Size(256, 256),
+        name: 'NASA GIBS',
+        opacity: 0.85
+      });
+    }
+    mapRef.current.overlayMapTypes.insertAt(0, nasaOverlayRef.current);
+  };
+
+  const removeNasaGibsOverlay = () => {
+    if (!mapRef.current) return;
+    // Remove all overlays matching our reference
+    for (let i = mapRef.current.overlayMapTypes.getLength() - 1; i >= 0; i--) {
+      const mt = mapRef.current.overlayMapTypes.getAt(i);
+      if (mt === nasaOverlayRef.current) {
+        mapRef.current.overlayMapTypes.removeAt(i);
+      }
+    }
+  };
+
+  const toggleNasaOverlay = () => {
+    setNasaOverlayEnabled(prev => {
+      const next = !prev;
+      if (next) {
+        addNasaGibsOverlay();
+      } else {
+        removeNasaGibsOverlay();
+      }
+      return next;
+    });
+  };
+
+  // Fetch NASA precipitation time series after weather location available
+  useEffect(() => {
+    if (!location.lat || !location.lng) return;
+    let cancelled = false;
+    const run = async () => {
+      setNasaPrecip(p => ({ ...p, loading: true }));
+      const res = await nasaDataService.getPrecipitationTimeSeries(location.lat, location.lng, 7);
+      if (cancelled) return;
+      setNasaPrecip({
+        loading: false,
+        series: res.series || [],
+        latest: res.latest ?? null,
+        average: res.average ?? null,
+        error: res.error || (res.series && res.series.length ? null : 'No data')
+      });
+    };
+    run();
+    return () => { cancelled = true; };
+  }, [location.lat, location.lng]);
 
   if (loading) {
     return (
@@ -371,7 +445,51 @@ const DashboardPage = () => {
           </div>
         </div>
 
-        {/* Weather Map with Google Maps */}
+        {/* NASA Precipitation (Data Rods) */}
+        <div className="bg-surface-dark rounded-xl border border-border-dark p-6 mb-8">
+          <h3 className="text-xl font-semibold mb-4 text-text-light">NASA 7-Day Precipitation</h3>
+          {nasaPrecip.loading ? (
+            <p className="text-text-muted text-sm">Loading NASA precipitation data...</p>
+          ) : nasaPrecip.error ? (
+            <p className="text-red-400 text-sm">{nasaPrecip.error}</p>
+          ) : (
+            <div>
+              <div className="flex flex-wrap gap-6 mb-4">
+                <div>
+                  <p className="text-xs text-text-muted uppercase tracking-wide">Latest (mm)</p>
+                  <p className="text-2xl font-semibold text-text-light">{nasaPrecip.latest != null ? nasaPrecip.latest.toFixed(2) : '--'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-text-muted uppercase tracking-wide">7-Day Avg (mm)</p>
+                  <p className="text-2xl font-semibold text-text-light">{nasaPrecip.average != null ? nasaPrecip.average.toFixed(2) : '--'}</p>
+                </div>
+              </div>
+              {nasaPrecip.series.length > 0 && (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-text-muted text-left border-b border-border-dark">
+                        <th className="py-2 pr-4 font-medium">Date</th>
+                        <th className="py-2 font-medium">Precip (mm)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {nasaPrecip.series.map(row => (
+                        <tr key={row.date} className="border-b border-border-dark/40 last:border-0">
+                          <td className="py-1 pr-4 text-text-light">{row.date}</td>
+                          <td className="py-1 text-text-light">{row.value.toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+          <p className="mt-3 text-xs text-text-muted">Source: NASA GES DISC Data Rods (example variable: {nasaDataService.defaultPrecipVariable})</p>
+        </div>
+
+        {/* Weather Map with Google Maps + NASA GIBS overlay */}
         <div className="bg-surface-dark rounded-xl border border-border-dark p-6 mb-8">
           <h3 className="text-xl font-semibold mb-4 text-text-light">Satellite Weather Map</h3>
           <div className="relative h-96 rounded-lg border border-border-dark overflow-hidden">
@@ -379,17 +497,35 @@ const DashboardPage = () => {
             
             {/* Map controls */}
             <div className="absolute bottom-4 right-4 flex flex-col gap-2 z-10">
-              <button className="bg-slate-800/80 border border-slate-600 text-white p-2 rounded hover:bg-slate-700 transition-colors">
+              <button
+                onClick={() => mapRef.current && mapRef.current.setZoom(mapRef.current.getZoom() + 1)}
+                className="bg-slate-800/80 border border-slate-600 text-white p-2 rounded hover:bg-slate-700 transition-colors"
+                title="Zoom In"
+              >
                 <span className="material-symbols-outlined text-sm">add</span>
               </button>
-              <button className="bg-slate-800/80 border border-slate-600 text-white p-2 rounded hover:bg-slate-700 transition-colors">
+              <button
+                onClick={() => mapRef.current && mapRef.current.setZoom(mapRef.current.getZoom() - 1)}
+                className="bg-slate-800/80 border border-slate-600 text-white p-2 rounded hover:bg-slate-700 transition-colors"
+                title="Zoom Out"
+              >
                 <span className="material-symbols-outlined text-sm">remove</span>
               </button>
-              <button className="bg-slate-800/80 border border-slate-600 text-white p-2 rounded hover:bg-slate-700 transition-colors">
+              <button
+                onClick={toggleNasaOverlay}
+                className={`bg-slate-800/80 border ${nasaOverlayEnabled ? 'border-primary' : 'border-slate-600'} text-white p-2 rounded hover:bg-slate-700 transition-colors`}
+                title="Toggle NASA GIBS Overlay"
+              >
                 <span className="material-symbols-outlined text-sm">layers</span>
               </button>
             </div>
+            {nasaOverlayEnabled && (
+              <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-3 py-1 rounded z-10">
+                NASA GIBS: MODIS Terra True Color
+              </div>
+            )}
           </div>
+          <p className="mt-3 text-xs text-text-muted">Imagery © NASA GIBS / Blue Marble, map data © Google</p>
         </div>
 
         {/* Action Buttons */}
